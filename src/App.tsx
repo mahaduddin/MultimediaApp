@@ -20,8 +20,6 @@ import { QrGenerator } from "./components/QrGenerator";
 import { PasswordGenerator } from "./components/PasswordGenerator";
 import { TextToSpeech } from "./components/TextToSpeech";
 
-type ViewType = "dashboard" | "ytdl" | "bgrm" | "ai" | "meme" | "yt-thumb" | "insta" | "converter" | "qrcode" | "passgen" | "tts";
-
 export default function App() {
   const [currentView, setCurrentView] = useState<ViewType>("dashboard");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -37,8 +35,9 @@ export default function App() {
     { id: "qrcode", icon: QrCode, label: "QR Generator" },
     { id: "tts", icon: Mic, label: "Text to Speech" },
     { id: "passgen", icon: KeyRound, label: "Password Gen" },
-    { id: "ai", icon: Bot, label: "Support Bot" },
   ] as const;
+  
+  type ViewType = typeof navItems[number]["id"];
 
   return (
     <div className="flex h-screen bg-neutral-950 text-neutral-50 overflow-hidden font-sans selection:bg-yellow-500/30">
@@ -135,27 +134,26 @@ export default function App() {
         </AnimatePresence>
 
         {/* Main Content Area */}
-        <main className="flex-1 overflow-y-auto overflow-x-hidden relative scrollbar-hide flex flex-col items-center">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden relative scrollbar-hide flex flex-col">
           {/* Subtle Background Glow */}
           <div className="fixed top-20 right-20 w-[500px] h-[500px] bg-yellow-500/10 rounded-full blur-[150px] pointer-events-none -z-10" />
         
         {/* Dynamic View Component */}
-        <div className="w-full flex-1 shrink-0 min-h-[100vh] pt-4 md:pt-8 px-2 md:px-0">
+        <div className="w-full flex-1 shrink-0 pb-16 pt-4 md:pt-8 px-2 md:px-0 flex flex-col">
           {currentView === "dashboard" && <Dashboard onNavigate={(id) => setCurrentView(id as ViewType)} />}
           {currentView === "ytdl" && <YoutubeTool />}
           {currentView === "bgrm" && <BgRemovalTool />}
-          {currentView === "ai" && <AiAssistant />}
-          {currentView === "meme" && <MemeMaker />}
-          {currentView === "yt-thumb" && <YtThumbnail />}
           {currentView === "insta" && <InstaDownloader />}
           {currentView === "converter" && <ImageConverter />}
           {currentView === "qrcode" && <QrGenerator />}
           {currentView === "tts" && <TextToSpeech />}
           {currentView === "passgen" && <PasswordGenerator />}
+          {currentView === "yt-thumb" && <YtThumbnail />}
+          {currentView === "meme" && <MemeMaker />}
         </div>
         
         {/* Universal Footer / Credits */}
-        <footer className="w-full max-w-7xl mt-24 mb-12 border border-neutral-800/80 rounded-[2.5rem] p-8 md:p-12 mx-4 md:mx-8 bg-neutral-900/40 shrink-0 shadow-2xl backdrop-blur-md">
+        <footer className="mt-auto w-[calc(100%-2rem)] max-w-7xl mx-auto mb-12 border border-neutral-800/80 rounded-[2.5rem] p-6 md:p-12 bg-neutral-900/40 shrink-0 shadow-2xl backdrop-blur-md">
            <div className="grid grid-cols-1 md:grid-cols-2 gap-10 text-neutral-400 text-sm mb-10">
              <div className="space-y-4">
                <h3 className="text-white font-bold text-xl flex items-center gap-3">
@@ -194,6 +192,9 @@ export default function App() {
         </footer>
       </main>
       </div>
+      
+      {/* Global AI Chat Support Widget */}
+      <AiAssistant />
     </div>
   );
 }

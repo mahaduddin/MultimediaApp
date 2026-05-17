@@ -19,13 +19,6 @@ export function Dashboard({ onNavigate }: { onNavigate: (id: string) => void }) 
       gradient: "from-fuchsia-500/20 to-fuchsia-600/5",
     },
     {
-      id: "ai",
-      title: "Support Bot",
-      description: "24/7 Customer support to help you use the tools.",
-      icon: <Bot className="w-8 h-8 text-yellow-500" />,
-      gradient: "from-yellow-500/20 to-amber-600/5",
-    },
-    {
       id: "meme",
       title: "Meme Maker",
       description: "Generate viral Hindi memes automatically using AI.",

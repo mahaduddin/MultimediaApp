@@ -1,15 +1,15 @@
 import { motion } from "motion/react";
-import { DownloadCloud, Video, Sparkles, Image as ImageIcon, Loader2, Youtube, CopySlash, QrCode, Instagram, KeyRound, Type, Mic, Bot } from "lucide-react";
+import { DownloadCloud, Video, Sparkles, Image as ImageIcon, Loader2, Youtube, CopySlash, QrCode, Instagram, KeyRound, Type, Mic, Bot, Minimize } from "lucide-react";
 import { cn } from "../lib/utils";
 
 export function Dashboard({ onNavigate }: { onNavigate: (id: string) => void }) {
   const tools = [
     {
-      id: "ytdl",
-      title: "YT Downloader",
-      description: "Download high quality videos & shorts from YouTube.",
-      icon: <Youtube className="w-8 h-8 text-red-500" />,
-      gradient: "from-red-500/20 to-red-600/5",
+      id: "compressor",
+      title: "Image Compressor",
+      description: "Compress images without losing quality right in your browser.",
+      icon: <Minimize className="w-8 h-8 text-yellow-500" />,
+      gradient: "from-yellow-500/20 to-yellow-600/5",
     },
     {
       id: "bgrm",

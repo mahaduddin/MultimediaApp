@@ -4,12 +4,12 @@
  */
 
 import React, { useState } from "react";
-import { LayoutGrid, Video, Image as ImageIcon, Sparkles, Youtube, CopySlash, QrCode, Instagram, KeyRound, CheckCircle, Menu, X, Type, ShieldCheck, FileText, PlaySquare, Mic, Bot } from "lucide-react";
+import { LayoutGrid, Video, Image as ImageIcon, Sparkles, Youtube, CopySlash, QrCode, Instagram, KeyRound, CheckCircle, Menu, X, Type, ShieldCheck, FileText, PlaySquare, Mic, Bot, Minimize } from "lucide-react";
 import { cn } from "./lib/utils";
 import { motion, AnimatePresence } from "motion/react";
 
 import { Dashboard } from "./components/Dashboard";
-import { YoutubeTool } from "./components/YoutubeTool";
+import { ImageCompressor } from "./components/ImageCompressor";
 import { BgRemovalTool } from "./components/BgRemovalTool";
 import { AiAssistant } from "./components/AiAssistant";
 import { MemeMaker } from "./components/MemeMaker";
@@ -27,7 +27,7 @@ export default function App() {
 
   const navItems = [
     { id: "dashboard", icon: LayoutGrid, label: "Home" },
-    { id: "ytdl", icon: Youtube, label: "YT Downloader" },
+    { id: "compressor", icon: Minimize, label: "Image Compressor" },
     { id: "yt-thumb", icon: PlaySquare, label: "YT Thumbnail" },
     { id: "insta", icon: Instagram, label: "IG Downloader" },
     { id: "bgrm", icon: ImageIcon, label: "BG Removal" },
@@ -142,7 +142,7 @@ export default function App() {
         {/* Dynamic View Component */}
         <div className="w-full shrink-0 pb-16 pt-4 md:pt-8 px-2 md:px-0 flex flex-col min-h-[50vh]">
           {currentView === "dashboard" && <Dashboard onNavigate={(id) => setCurrentView(id as ViewType)} />}
-          {currentView === "ytdl" && <YoutubeTool />}
+          {currentView === "compressor" && <ImageCompressor />}
           {currentView === "bgrm" && <BgRemovalTool />}
           {currentView === "insta" && <InstaDownloader />}
           {currentView === "converter" && <ImageConverter />}

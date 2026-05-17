@@ -50,20 +50,39 @@ export function AiAssistant() {
     saveToFirebase("user", userMessage);
 
     try {
-      const res = await fetch("/api/ai/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: userMessage }),
-      });
+      let res;
+      try {
+        res = await fetch("/api/ai/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: userMessage }),
+        });
+      } catch (e: any) {
+        throw new Error("Network issue: Unable to connect to the server.");
+      }
 
       let data;
       try {
         const text = await res.text();
         data = text ? JSON.parse(text) : {};
       } catch (e) {
-        throw new Error("Invalid response from server");
+        throw new Error("Invalid response received from server.");
       }
-      if (!res.ok) throw new Error(data.error || "Failed to fetch response");
+
+      if (!res.ok) {
+        if (res.status === 500 && (data.error?.includes("API key not valid") || data.error?.includes("GEMINI_API_KEY"))) {
+          throw new Error("AI is not configured. Please add a valid GEMINI_API_KEY.");
+        }
+        
+        let errorMessage = data.error;
+        if (typeof data.error === "string" && data.error.startsWith("{")) {
+           try {
+              const parsedInfo = JSON.parse(data.error);
+              errorMessage = parsedInfo.error?.message || data.error;
+           } catch { }
+        }
+        throw new Error(errorMessage || "Failed to fetch response.");
+      }
 
       setMessages(prev => [...prev, { role: "ai", content: data.reply }]);
       

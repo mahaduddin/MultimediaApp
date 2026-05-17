@@ -19,6 +19,7 @@ import { ImageConverter } from "./components/ImageConverter";
 import { QrGenerator } from "./components/QrGenerator";
 import { PasswordGenerator } from "./components/PasswordGenerator";
 import { TextToSpeech } from "./components/TextToSpeech";
+import { FeedbackWidget } from "./components/FeedbackWidget";
 
 export default function App() {
   const [currentView, setCurrentView] = useState<ViewType>("dashboard");
@@ -195,6 +196,9 @@ export default function App() {
       
       {/* Global AI Chat Support Widget */}
       <AiAssistant />
+      
+      {/* Global Feedback Widget */}
+      <FeedbackWidget />
     </div>
   );
 }

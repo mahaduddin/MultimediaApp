@@ -84,14 +84,14 @@ async function startServer() {
 
       const ai = new GoogleGenAI({ apiKey });
       
-      let systemInstruction = "You are a customer support AI for Multimedia.app. Only assist users with using the app's features (YT Downloader, BG Removal, Image Converter, Meme Maker, QR Code). Talk respectfully in Hindi or English as a customer support agent. Give a direct answer, do not output JSON.";
+      let systemInstruction = "You are a customer support AI for Multimedia.app. Only assist users with using the app's features (YT Downloader, BG Removal, Image Converter, Meme Maker, QR Code). Talk respectfully in short, simple English sentences. Do not use Hindi, emojis, or symbols. Give a direct answer, do not output JSON.";
       
-      if (message.toLowerCase().includes("meme text")) {
-        systemInstruction = "You are a meme generator. Read the prompt and output a single, funny, short punchline in Hindi/Hinglish. Give only the punchline, no quotes or JSON formatting.";
+      if (message.toLowerCase().includes("meme text") || message.toLowerCase().includes("meme template")) {
+        systemInstruction = "You are a meme generator. Read the prompt and output exactly 3 different, funny, short punchlines in Hindi or Hinglish. Separate each punchline with a newline character. Give ONLY the punchlines, no bullets, numbers, quotes, or conversational text.";
       }
 
       const response = await ai.models.generateContent({
-        model: "gemini-2.5-flash",
+        model: "gemini-3-flash-preview",
         contents: message,
         config: { 
           systemInstruction,

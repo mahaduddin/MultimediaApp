@@ -15,8 +15,11 @@ export function MemeMaker() {
   const [templates, setTemplates] = useState<MemeTemplate[]>([]);
   const [currentTemplate, setCurrentTemplate] = useState<MemeTemplate | null>(null);
   const [memeText, setMemeText] = useState("");
+  const [textOptions, setTextOptions] = useState<string[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState("");
+  const [textPos, setTextPos] = useState({ x: 0.5, y: 0.8 });
+  const [isDragging, setIsDragging] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -81,11 +84,13 @@ export function MemeMaker() {
         }
         lines.push(line);
 
-        // Draw at the bottom
-        let y = height - (lines.length * fontSize) - 20;
+        // Draw at relative position
+        let y = Math.max(fontSize, Math.min(height - (lines.length * fontSize), height * textPos.y));
+        const cx = Math.max(20, Math.min(width - 20, width * textPos.x));
+        
         for(let i=0; i<lines.length; i++) {
-          ctx.strokeText(lines[i], width/2, y);
-          ctx.fillText(lines[i], width/2, y);
+          ctx.strokeText(lines[i], cx, y);
+          ctx.fillText(lines[i], cx, y);
           y += fontSize + 5;
         }
       }
@@ -95,7 +100,17 @@ export function MemeMaker() {
 
   useEffect(() => {
     drawMeme();
-  }, [currentTemplate, memeText]);
+  }, [currentTemplate, memeText, textPos]);
+
+  const handlePointerDown = () => setIsDragging(true);
+  const handlePointerUp = () => setIsDragging(false);
+  const handlePointerMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    if (!isDragging || !canvasRef.current) return;
+    const rect = canvasRef.current.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width;
+    const y = (e.clientY - rect.top) / rect.height;
+    setTextPos({ x, y });
+  };
 
   const generateAIText = async () => {
     if (!currentTemplate) return;
@@ -117,7 +132,18 @@ export function MemeMaker() {
         throw new Error("Invalid response from server");
       }
       if (!res.ok) throw new Error(data.error || "Failed to generate meme text");
-      setMemeText(data.reply.trim().replace(/^"|"$/g, ''));
+      let textReply = data.reply?.trim() || "";
+      if (!textReply || textReply.length < 2) {
+        throw new Error("AI did not return a valid meme punchline.");
+      }
+      
+      const options = textReply.split('\n').map((opt: string) => opt.replace(/^"|"$/g, '').trim()).filter(Boolean);
+      if (options.length > 0) {
+        setTextOptions(options);
+        setMemeText(options[0]);
+      } else {
+        throw new Error("AI output format error.");
+      }
     } catch (err: any) {
       setError("Failed to generate AI meme text.");
     } finally {
@@ -136,11 +162,19 @@ export function MemeMaker() {
     document.body.removeChild(link);
   };
 
+  useEffect(() => {
+    if (currentTemplate && !memeText && !isGenerating && textOptions.length === 0) {
+      generateAIText();
+    }
+  }, [currentTemplate]);
+
   const nextTemplate = () => {
     if (!templates.length) return;
     const random = templates[Math.floor(Math.random() * templates.length)];
     setCurrentTemplate(random);
     setMemeText("");
+    setTextOptions([]);
+    setTextPos({ x: 0.5, y: 0.8 });
   };
 
   const handleCustomUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -172,7 +206,15 @@ export function MemeMaker() {
         <div className="flex-1 bg-neutral-900/40 border border-neutral-800/80 rounded-[2.5rem] p-4 flex flex-col items-center justify-center min-h-[400px] backdrop-blur-xl shadow-2xl overflow-hidden relative">
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-yellow-500/5 via-transparent to-transparent -z-10" />
           {error && <p className="text-red-400 mb-4 font-medium">{error}</p>}
-          <canvas ref={canvasRef} className="max-w-full rounded-xl shadow-2xl" />
+          <canvas 
+            ref={canvasRef} 
+            className="max-w-full rounded-xl shadow-2xl cursor-move touch-none" 
+            onPointerDown={handlePointerDown}
+            onPointerMove={handlePointerMove}
+            onPointerUp={handlePointerUp}
+            onPointerLeave={handlePointerUp}
+          />
+          <p className="text-xs text-neutral-500 font-medium absolute bottom-4 text-center pb-2 pointer-events-none">Hint: You can drag the text to reposition it.</p>
         </div>
 
         {/* Controls */}
@@ -200,10 +242,27 @@ export function MemeMaker() {
             <textarea
               value={memeText}
               onChange={(e) => setMemeText(e.target.value)}
-              className="w-full bg-black border border-neutral-700 rounded-xl p-3 text-white outline-none focus:border-yellow-500/50 min-h-[100px] shadow-inner"
+              className="w-full bg-black border border-neutral-700 rounded-xl p-3 text-white outline-none focus:border-yellow-500/50 min-h-[80px] shadow-inner"
               placeholder="Your punchline..."
             />
           </div>
+
+          {textOptions.length > 0 && (
+            <div className="space-y-2">
+              <label className="text-sm text-neutral-400 font-medium px-1">AI Suggestions</label>
+              <div className="flex flex-col gap-2">
+                {textOptions.slice(0, 3).map((opt, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setMemeText(opt)}
+                    className={`p-2 text-sm text-left border rounded-xl transition-colors ${memeText === opt ? 'bg-yellow-500/10 border-yellow-500/50 text-yellow-500' : 'bg-neutral-800 border-neutral-700 hover:border-yellow-500/50 text-neutral-200'}`}
+                  >
+                    {opt}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           <button 
             onClick={generateAIText}

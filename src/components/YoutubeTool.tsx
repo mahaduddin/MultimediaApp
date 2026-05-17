@@ -39,7 +39,13 @@ export function YoutubeTool() {
         body: JSON.stringify({ url }),
       });
 
-      const data = await res.json();
+      let data;
+      try {
+        const text = await res.text();
+        data = text ? JSON.parse(text) : {};
+      } catch (e) {
+        throw new Error("Invalid response from server");
+      }
       if (!res.ok) throw new Error(data.error || "Failed to fetch metadata");
       
       setVideoInfo(data);

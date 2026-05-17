@@ -84,10 +84,10 @@ async function startServer() {
 
       const ai = new GoogleGenAI({ apiKey });
       
-      let systemInstruction = "You are a customer support AI for Multimedia.app. Only assist users with using the app's features (YT Downloader, BG Removal, Image Converter, Meme Maker, QR Code). Talk respectfully in Hindi or English as a customer support agent. Tumhara response sirf valid JSON format me hona chahiye. Koi extra text, explanation, heading, ya markdown include mat karo. JSON complete aur properly formatted ho - saare brackets, commas, aur double quotes sahi hon taake directly parse kiya ja sake. Format: { \"reply\": \"your message here\" }";
+      let systemInstruction = "You are a customer support AI for Multimedia.app. Only assist users with using the app's features (YT Downloader, BG Removal, Image Converter, Meme Maker, QR Code). Talk respectfully in Hindi or English as a customer support agent. Give a direct answer, do not output JSON.";
       
       if (message.toLowerCase().includes("meme text")) {
-        systemInstruction = "You are a meme generator. Read the prompt and output a single, funny, short punchline in Hindi/Hinglish. Tumhara response sirf valid JSON format me hona chahiye. Koi extra text, explanation, heading, ya markdown include mat karo. JSON complete aur properly formatted ho — saare brackets, commas, aur double quotes sahi hon taake directly parse kiya ja sake. Format: { \"reply\": \"punchline text\" }";
+        systemInstruction = "You are a meme generator. Read the prompt and output a single, funny, short punchline in Hindi/Hinglish. Give only the punchline, no quotes or JSON formatting.";
       }
 
       const response = await ai.models.generateContent({
@@ -95,16 +95,10 @@ async function startServer() {
         contents: message,
         config: { 
           systemInstruction,
-          responseMimeType: "application/json"
         }
       });
       
-      try {
-        const parsed = JSON.parse(response.text || "{}");
-        res.json({ reply: parsed.reply || "No reply generated" });
-      } catch (e) {
-        res.json({ reply: response.text });
-      }
+      res.json({ reply: response.text || "No reply generated" });
     } catch (err: any) {
       console.error("AI Error:", err);
       res.status(500).json({ error: err.message || "Failed to communicate with AI" });

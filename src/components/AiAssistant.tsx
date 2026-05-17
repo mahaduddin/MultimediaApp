@@ -2,6 +2,8 @@ import React, { useState, useRef, useEffect } from "react";
 import { Sparkles, Send, Loader2, Bot, User, X } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "../lib/utils";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { db } from "../lib/firebase";
 
 interface Message {
   role: "user" | "ai";
@@ -23,6 +25,18 @@ export function AiAssistant() {
     }
   }, [messages, isLoading, isOpen]);
 
+  const saveToFirebase = async (role: string, content: string) => {
+    try {
+      await addDoc(collection(db, "chat_history"), {
+        role,
+        content,
+        timestamp: serverTimestamp()
+      });
+    } catch (e) {
+      console.error("Firebase save error:", e);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
@@ -31,6 +45,9 @@ export function AiAssistant() {
     setInput("");
     setMessages(prev => [...prev, { role: "user", content: userMessage }]);
     setIsLoading(true);
+    
+    // Save user message
+    saveToFirebase("user", userMessage);
 
     try {
       const res = await fetch("/api/ai/chat", {
@@ -39,10 +56,19 @@ export function AiAssistant() {
         body: JSON.stringify({ message: userMessage }),
       });
 
-      const data = await res.json();
+      let data;
+      try {
+        const text = await res.text();
+        data = text ? JSON.parse(text) : {};
+      } catch (e) {
+        throw new Error("Invalid response from server");
+      }
       if (!res.ok) throw new Error(data.error || "Failed to fetch response");
 
       setMessages(prev => [...prev, { role: "ai", content: data.reply }]);
+      
+      // Save AI reply
+      saveToFirebase("assistant", data.reply);
     } catch (err: any) {
       setMessages(prev => [...prev, { role: "ai", content: "⚠️ Error: " + err.message }]);
     } finally {

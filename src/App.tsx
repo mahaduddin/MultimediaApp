@@ -139,7 +139,7 @@ export default function App() {
           <div className="fixed top-20 right-20 w-[500px] h-[500px] bg-yellow-500/10 rounded-full blur-[150px] pointer-events-none -z-10" />
         
         {/* Dynamic View Component */}
-        <div className="w-full flex-1 shrink-0 pb-16 pt-4 md:pt-8 px-2 md:px-0 flex flex-col">
+        <div className="w-full shrink-0 pb-16 pt-4 md:pt-8 px-2 md:px-0 flex flex-col min-h-[50vh]">
           {currentView === "dashboard" && <Dashboard onNavigate={(id) => setCurrentView(id as ViewType)} />}
           {currentView === "ytdl" && <YoutubeTool />}
           {currentView === "bgrm" && <BgRemovalTool />}

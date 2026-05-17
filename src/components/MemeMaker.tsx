@@ -109,8 +109,14 @@ export function MemeMaker() {
           message: `Generate a funny, relatable single punchline meme text in Hindi (in Latin script/Hinglish or Devanagari) for a meme template named "${currentTemplate.name}". The text should be concise, not too big. Please output ONLY the meme text.` 
         }),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
+      let data;
+      try {
+        const text = await res.text();
+        data = text ? JSON.parse(text) : {};
+      } catch (e) {
+        throw new Error("Invalid response from server");
+      }
+      if (!res.ok) throw new Error(data.error || "Failed to generate meme text");
       setMemeText(data.reply.trim().replace(/^"|"$/g, ''));
     } catch (err: any) {
       setError("Failed to generate AI meme text.");
